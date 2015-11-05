@@ -26,14 +26,21 @@ class MasterViewController: UITableViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
+
+        var samplePothole = PotHole(type: Type(typeId: 0,description: "water"), id: 0, latitude: 93.2, longitude: 94.2, imageType: ".png", description: "leak", date: NSDate(), user: "086")
+        potholes.insert(samplePothole, atIndex: 0)
+        samplePothole = PotHole(type: Type(typeId: 1,description: "street"), id: 0, latitude: 93.2, longitude: 94.2, imageType: ".png", description: "overflow", date: NSDate(), user: "086")
+        potholes.insert(samplePothole, atIndex: 0)
         
-        
+   
         //network call in background thread and load list items
         /*for var i = 0 ; i < types.count ; i++ {
             
             let newType = Type(typeId : i, description : "category \(i)")
             types.insert(newType, atIndex: i)
         }*/
+        
+        
         var newType = Type(typeId : 0, description : "category \(0) Water")
         types.insert(newType, atIndex: 0)
         newType = Type(typeId : 1, description : "category \(1) Street")
@@ -66,7 +73,7 @@ class MasterViewController: UITableViewController {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
                 //let object = portholes[indexPath.row] as! NSDate
-                let currentPotHole = potholes[indexPath.row]
+                let currentPotHole = potholes.filter{$0.type.typeId == indexPath.section }[indexPath.row]
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
                 //controller.detailItem = object
                 controller.potHoleDetailItem = currentPotHole
@@ -90,12 +97,13 @@ class MasterViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-
-        let object = potholes[indexPath.row]
-        cell.textLabel!.text = object.description
-        cell.detailTextLabel?.text = object.date.description
-        return cell
+            
+            let object = potholes.filter{$0.type.typeId == indexPath.section }[indexPath.row]
+            cell.textLabel!.text = object.description
+            cell.detailTextLabel?.text = object.date.description
+            return cell
     }
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
