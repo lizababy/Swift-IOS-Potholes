@@ -15,6 +15,7 @@
 		1B5035B61BE9A9310078B743 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B5035B41BE9A9310078B743 /* LaunchScreen.storyboard */; };
 		1B5035C11BE9A9310078B743 /* PotholesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5035C01BE9A9310078B743 /* PotholesTests.swift */; };
 		1B5035CC1BE9A9310078B743 /* PotholesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5035CB1BE9A9310078B743 /* PotholesUITests.swift */; };
+		1BD5876F1BEBC9390073933D /* PotHole.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD5876E1BEBC9390073933D /* PotHole.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,8 @@
 		1B5035C71BE9A9310078B743 /* PotholesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PotholesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B5035CB1BE9A9310078B743 /* PotholesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PotholesUITests.swift; sourceTree = "<group>"; };
 		1B5035CD1BE9A9310078B743 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1B5035D91BEAF11F0078B743 /* httpGet.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = httpGet.playground; sourceTree = "<group>"; };
+		1BD5876E1BEBC9390073933D /* PotHole.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PotHole.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +102,7 @@
 		1B5035A81BE9A9310078B743 /* Potholes */ = {
 			isa = PBXGroup;
 			children = (
+				1B5035D91BEAF11F0078B743 /* httpGet.playground */,
 				1B5035A91BE9A9310078B743 /* AppDelegate.swift */,
 				1B5035AB1BE9A9310078B743 /* MasterViewController.swift */,
 				1B5035AD1BE9A9310078B743 /* DetailViewController.swift */,
@@ -106,6 +110,7 @@
 				1B5035B21BE9A9310078B743 /* Assets.xcassets */,
 				1B5035B41BE9A9310078B743 /* LaunchScreen.storyboard */,
 				1B5035B71BE9A9310078B743 /* Info.plist */,
+				1BD5876E1BEBC9390073933D /* PotHole.swift */,
 			);
 			path = Potholes;
 			sourceTree = "<group>";
@@ -265,6 +270,7 @@
 				1B5035AE1BE9A9310078B743 /* DetailViewController.swift in Sources */,
 				1B5035AC1BE9A9310078B743 /* MasterViewController.swift in Sources */,
 				1B5035AA1BE9A9310078B743 /* AppDelegate.swift in Sources */,
+				1BD5876F1BEBC9390073933D /* PotHole.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,6 +497,7 @@
 				1B5035D21BE9A9310078B743 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1B5035D31BE9A9310078B743 /* Build configuration list for PBXNativeTarget "PotholesTests" */ = {
 			isa = XCConfigurationList;
@@ -499,6 +506,7 @@
 				1B5035D51BE9A9310078B743 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1B5035D61BE9A9310078B743 /* Build configuration list for PBXNativeTarget "PotholesUITests" */ = {
 			isa = XCConfigurationList;
@@ -507,6 +515,7 @@
 				1B5035D81BE9A9310078B743 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
