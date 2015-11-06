@@ -22,7 +22,7 @@ class MasterViewController: UITableViewController {
         // Do any additional setup after loading the view, typically from a nib.
        // self.navigationItem.leftBarButtonItem = self.editButtonItem()
         
-        let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "post:")
+        let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "postNewItem:")
         self.navigationItem.leftBarButtonItem = addButton
         
         let refreshButton = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: "refresh:")
@@ -46,9 +46,10 @@ class MasterViewController: UITableViewController {
         
     }
     
-    func insertNewObject(sender: AnyObject) {
-
-        /*let newPortHole = PotHole(type: "street", id: 0, latitude: 93.2, longitude: 94.2, imageType: ".png", description: "leak", date: NSDate().description, user: "086")
+    func postNewItem(sender: AnyObject) {
+        performSegueWithIdentifier("postDetails", sender: sender)
+        
+        /*let newPortHole = PotHole(type: "street", id: 0, latitude: 93.2, longitsenderude: 94.2, imageType: ".png", description: "leak", date: NSDate().description, user: "086")
         potholes.insert(newPortHole, atIndex: 0)
         let indexPath = NSIndexPath(forRow: 0, inSection: types.indexOf(newPortHole.type)!)
         self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)*/
@@ -108,21 +109,17 @@ class MasterViewController: UITableViewController {
                 defineCategories(jsonNSArray)
                 urlId = 1
                 for type in types{
-                    if let url = NSURL(string: "http://bismarck.sdsu.edu/city/fromDate?type=\(type)") {
                     
+                    if let url = NSURL(string: "http://bismarck.sdsu.edu/city/fromDate?type=\(type)") {
                         let session = NSURLSession.sharedSession()
                         let task = session.dataTaskWithURL(url, completionHandler: getWebPage)
                         task.resume()
-                    
                     }
                }
-            
             case 1:
             
                 fetchPotHoles(jsonNSArray)
-            
-
-            default:
+        default:
                 
                  break
         }
@@ -181,6 +178,13 @@ class MasterViewController: UITableViewController {
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
+        if segue.identifier == "postDetails"{
+            
+           let controller = (segue.destinationViewController as! UINavigationController).topViewController as! PostDetailsViewController
+            controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+            controller.navigationItem.leftItemsSupplementBackButton = true
+        }
+        
     }
 
     // MARK: - Table View

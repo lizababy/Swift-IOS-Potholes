@@ -16,6 +16,7 @@
 		1B5035C11BE9A9310078B743 /* PotholesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5035C01BE9A9310078B743 /* PotholesTests.swift */; };
 		1B5035CC1BE9A9310078B743 /* PotholesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5035CB1BE9A9310078B743 /* PotholesUITests.swift */; };
 		1BD5876F1BEBC9390073933D /* PotHole.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD5876E1BEBC9390073933D /* PotHole.swift */; };
+		1BD587731BED2AF80073933D /* PostDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD587721BED2AF80073933D /* PostDetailsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 		1B5035CD1BE9A9310078B743 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1B5035D91BEAF11F0078B743 /* httpGet.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = httpGet.playground; sourceTree = "<group>"; };
 		1BD5876E1BEBC9390073933D /* PotHole.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PotHole.swift; sourceTree = "<group>"; };
+		1BD587721BED2AF80073933D /* PostDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostDetailsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 				1B5035B41BE9A9310078B743 /* LaunchScreen.storyboard */,
 				1B5035B71BE9A9310078B743 /* Info.plist */,
 				1BD5876E1BEBC9390073933D /* PotHole.swift */,
+				1BD587721BED2AF80073933D /* PostDetailsViewController.swift */,
 			);
 			path = Potholes;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 				1B5035AC1BE9A9310078B743 /* MasterViewController.swift in Sources */,
 				1B5035AA1BE9A9310078B743 /* AppDelegate.swift in Sources */,
 				1BD5876F1BEBC9390073933D /* PotHole.swift in Sources */,
+				1BD587731BED2AF80073933D /* PostDetailsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
