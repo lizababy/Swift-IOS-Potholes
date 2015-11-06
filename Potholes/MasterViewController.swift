@@ -133,9 +133,9 @@ class MasterViewController: UITableViewController {
         types = NSArray(array:jsonNSArray.sort({($0 as! String) < ($1 as! String)}), copyItems: true) as! [String]
         
     }
-    func fetchPotHoles(jsonNSArray : NSArray){
-       
-        for jsonDictionary in jsonNSArray{
+    func fetchPotHoles(let jsonNSArray : NSArray){
+        
+        for jsonDictionary in jsonNSArray.reverse(){
             
             let potHoleType = jsonDictionary["type"] as! String
             let potHole = PotHole(type: potHoleType ,
@@ -179,10 +179,11 @@ class MasterViewController: UITableViewController {
             }
         }
         if segue.identifier == "postDetails"{
-            
-           let controller = (segue.destinationViewController as! UINavigationController).topViewController as! PostDetailsViewController
+           
+            let controller = (segue.destinationViewController as! UINavigationController).topViewController as! PostDetailsViewController
             controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
             controller.navigationItem.leftItemsSupplementBackButton = true
+
         }
         
     }
@@ -205,8 +206,8 @@ class MasterViewController: UITableViewController {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
             
             let object = potholes.filter{$0.type == types[indexPath.section]}[indexPath.row]
-            cell.textLabel!.text = object.description
-            cell.detailTextLabel?.text = object.date
+            cell.textLabel!.text = object.date
+            cell.detailTextLabel?.text = object.description
             return cell
     }
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
