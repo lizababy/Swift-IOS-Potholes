@@ -37,10 +37,10 @@ class DetailViewController: UIViewController {
         if let potHoleDetails = self.potHoleDetailItem {
             
            if let label = self.typeLabel {
-                label.text = potHoleDetails.type.description
+                label.text = potHoleDetails.type
             }
             if let label = self.dateLabel {
-                label.text = potHoleDetails.date.description
+                label.text = potHoleDetails.date
             }
             if let label = self.userLabel {
                 label.text = potHoleDetails.user

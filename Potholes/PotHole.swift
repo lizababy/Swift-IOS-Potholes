@@ -9,18 +9,13 @@
 import Foundation
 
 struct PotHole {
-    let type : Type
+    let type : String
     let id : Int
     let latitude : Float
     let longitude : Float
     let imageType : String
     let description : String
-    let date : NSDate
+    let date : String
     let user : String
     
-}
-struct Type {
-    
-    let typeId : Int
-    let description : String
 }
