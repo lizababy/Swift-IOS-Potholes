@@ -8,17 +8,34 @@
 
 import UIKit
 
-class MasterViewController: UITableViewController {
+class MasterViewController: UIViewController,UITableViewDelegate {
 
     var detailViewController: DetailViewController? = nil
     var potholes = [PotHole]()
     var types = [String]()
     var urlId = 0
+    var date :String = ""
+    var user : String = ""
 
-
+    
+    @IBOutlet weak var tableView: UITableView!
+    
+    @IBOutlet weak var userLabel: UILabel!
+    
+    @IBOutlet weak var dateLabel: UILabel!
+    
+    @IBAction func showTextEntryAlert(sender: UIButton) {
+        
+        textEntryAlert(sender)
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        userLabel.text = user.isEmpty ? "All" : user
+        dateLabel.text = date.isEmpty ? "All" : date
+
         // Do any additional setup after loading the view, typically from a nib.
        // self.navigationItem.leftBarButtonItem = self.editButtonItem()
         
@@ -26,13 +43,15 @@ class MasterViewController: UITableViewController {
         self.navigationItem.leftBarButtonItem = addButton
         
         let refreshButton = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: "refresh:")
-        self.navigationItem.rightBarButtonItem = refreshButton
+         self.navigationItem.rightBarButtonItem = refreshButton
         
         if let split = self.splitViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
    
+    
+
         //network call in background thread and load list items
         
         if let url = NSURL(string: "http://bismarck.sdsu.edu/city/categories") {
@@ -47,7 +66,7 @@ class MasterViewController: UITableViewController {
     }
     
     func postNewItem(sender: AnyObject) {
-        performSegueWithIdentifier("postDetails", sender: sender)
+        performSegueWithIdentifier("postDetail", sender: sender)
         
         /*let newPortHole = PotHole(type: "street", id: 0, latitude: 93.2, longitsenderude: 94.2, imageType: ".png", description: "leak", date: NSDate().description, user: "086")
         potholes.insert(newPortHole, atIndex: 0)
@@ -55,6 +74,65 @@ class MasterViewController: UITableViewController {
         self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)*/
 
 
+    }
+    func textEntryAlert(sender : AnyObject){
+        
+        let title = NSLocalizedString("Filter Options:", comment: "")
+        let message = NSLocalizedString("Enter userName and/or from Date or all", comment: "")
+        let cancelButtonTitle = NSLocalizedString("Cancel", comment: "")
+        let okButtonTitle = NSLocalizedString("Search", comment: "")
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+        
+        // Add the text field for text entry.
+        alertController.addTextFieldWithConfigurationHandler { textField -> Void in
+            // If you need to customize the text field, you can do so here.
+             textField.placeholder = "Enter UserName"
+             textField.text = self.user
+            textField.keyboardType = .NumbersAndPunctuation
+
+            
+        }
+        alertController.addTextFieldWithConfigurationHandler { textField -> Void in
+            // If you need to customize the text field, you can do so here.
+            textField.placeholder = "Enter from Date (mm/dd/yy)"
+            textField.text = self.date
+            textField.keyboardType = .NumbersAndPunctuation
+
+        }
+        
+        
+        // Create the actions.
+        let cancelAction = UIAlertAction(title: cancelButtonTitle, style: .Cancel) { _ in
+            NSLog("The \"Text Entry\" alert's cancel action occured.")
+        }
+        
+        let okAction = UIAlertAction(title: okButtonTitle, style: .Default) { _ in
+            if let dateField = alertController.textFields?[1] , let nameField = alertController.textFields?[0]{
+                guard dateField.text!.isEmpty && nameField.text!.isEmpty else{
+                    
+                    self.date = dateField.text!
+                    self.user = nameField.text!
+                    self.dateLabel.text = self.date.isEmpty ? "All" : self.date
+                    self.userLabel.text = self.user.isEmpty ? "All" : self.user
+                    
+                    self.refresh(sender)
+
+                    return
+                    
+                }
+                return
+            }
+
+        }
+        // Add the actions.
+        
+        alertController.addAction(cancelAction)
+        alertController.addAction(okAction)
+        
+        presentViewController(alertController, animated: true, completion: nil)
+
+        
     }
     func refresh(sender: AnyObject){
         
@@ -110,7 +188,7 @@ class MasterViewController: UITableViewController {
                 urlId = 1
                 for type in types{
                     
-                    if let url = NSURL(string: "http://bismarck.sdsu.edu/city/fromDate?type=\(type)") {
+                    if let url = NSURL(string: "http://bismarck.sdsu.edu/city/fromDate?type=\(type)&date=\(date)&user=\(user)") {
                         let session = NSURLSession.sharedSession()
                         let task = session.dataTaskWithURL(url, completionHandler: getWebPage)
                         task.resume()
@@ -178,9 +256,9 @@ class MasterViewController: UITableViewController {
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
-        if segue.identifier == "postDetails"{
+        if segue.identifier == "postDetail"{
            
-            let controller = (segue.destinationViewController as! UINavigationController).topViewController as! PostDetailsViewController
+           let controller = (segue.destinationViewController as! UINavigationController).topViewController as! PostDetailsViewController
             controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
             controller.navigationItem.leftItemsSupplementBackButton = true
 
@@ -190,18 +268,18 @@ class MasterViewController: UITableViewController {
 
     // MARK: - Table View
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return types.count
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return potholes.filter{$0.type == types[section]}.count
         
         
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
             
@@ -210,7 +288,7 @@ class MasterViewController: UITableViewController {
             cell.detailTextLabel?.text = object.description
             return cell
     }
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+     func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
         return types[section]
     }
