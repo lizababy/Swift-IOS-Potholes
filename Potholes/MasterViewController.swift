@@ -7,73 +7,53 @@
 //
 
 import UIKit
+import Alamofire
 
 class MasterViewController: UIViewController,UITableViewDelegate {
 
     var detailViewController: DetailViewController? = nil
-    var potholes = [PotHole]()
+    var potholesDict = [String : [PotHole]]()
     var types = [String]()
-    var urlId = 0
     var date :String = ""
     var user : String = ""
 
+    @IBOutlet weak var waitIndicator: UIActivityIndicatorView!
     
     @IBOutlet weak var tableView: UITableView!
-    
-    @IBOutlet weak var userLabel: UILabel!
-    
-    @IBOutlet weak var dateLabel: UILabel!
-    
-    @IBAction func showTextEntryAlert(sender: UIButton) {
-        
-        textEntryAlert(sender)
-        
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        userLabel.text = user.isEmpty ? "All" : user
-        dateLabel.text = date.isEmpty ? "All" : date
+        self.tabBarController?.navigationItem.prompt = "Reports from All users"
+        self.tabBarController?.navigationItem.titleView?.tintColor = UIColor.greenColor()
 
-        // Do any additional setup after loading the view, typically from a nib.
-       // self.navigationItem.leftBarButtonItem = self.editButtonItem()
         
-        let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "postNewItem:")
-        self.navigationItem.leftBarButtonItem = addButton
+        let barButtonItemAdd = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "postNewItem:")
+        self.tabBarController?.navigationItem.leftBarButtonItem = barButtonItemAdd
         
-        let refreshButton = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: "refresh:")
-         self.navigationItem.rightBarButtonItem = refreshButton
+        let barButtonItemRefresh = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: "refreshTable:")
+        let buttonFilter: UIButton = UIButton(type: UIButtonType.InfoDark) as UIButton
+        buttonFilter.frame = CGRectMake(0, 0, 40, 40)
+        buttonFilter.setImage(UIImage(named:"Filter"), forState: UIControlState.Normal)
+        buttonFilter.addTarget(self, action: "textEntryAlert:", forControlEvents: UIControlEvents.TouchUpInside)
         
+        let barButtonItemFilter: UIBarButtonItem = UIBarButtonItem(customView: buttonFilter)
+        self.tabBarController?.navigationItem.rightBarButtonItems = [barButtonItemFilter, barButtonItemRefresh]
+        
+        
+
         if let split = self.splitViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
-   
-    
 
         //network call in background thread and load list items
         
-        if let url = NSURL(string: "http://bismarck.sdsu.edu/city/categories") {
-            
-            let session = NSURLSession.sharedSession()
-            let task = session.dataTaskWithURL(url, completionHandler: getWebPage)
-            task.resume()
-            
-        }
-        
+        refreshTable(self)
         
     }
-    
     func postNewItem(sender: AnyObject) {
         performSegueWithIdentifier("postDetail", sender: sender)
-        
-        /*let newPortHole = PotHole(type: "street", id: 0, latitude: 93.2, longitsenderude: 94.2, imageType: ".png", description: "leak", date: NSDate().description, user: "086")
-        potholes.insert(newPortHole, atIndex: 0)
-        let indexPath = NSIndexPath(forRow: 0, inSection: types.indexOf(newPortHole.type)!)
-        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)*/
-
-
     }
     func textEntryAlert(sender : AnyObject){
         
@@ -90,38 +70,32 @@ class MasterViewController: UIViewController,UITableViewDelegate {
              textField.placeholder = "Enter UserName"
              textField.text = self.user
             textField.keyboardType = .NumbersAndPunctuation
-
             
         }
+        
         alertController.addTextFieldWithConfigurationHandler { textField -> Void in
             // If you need to customize the text field, you can do so here.
             textField.placeholder = "Enter from Date (mm/dd/yy)"
             textField.text = self.date
             textField.keyboardType = .NumbersAndPunctuation
-
+            
         }
         
         
         // Create the actions.
-        let cancelAction = UIAlertAction(title: cancelButtonTitle, style: .Cancel) { _ in
-            NSLog("The \"Text Entry\" alert's cancel action occured.")
-        }
-        
+        let cancelAction = UIAlertAction(title: cancelButtonTitle, style: .Cancel, handler : nil)
         let okAction = UIAlertAction(title: okButtonTitle, style: .Default) { _ in
-            if let dateField = alertController.textFields?[1] , let nameField = alertController.textFields?[0]{
-                guard dateField.text!.isEmpty && nameField.text!.isEmpty else{
-                    
-                    self.date = dateField.text!
-                    self.user = nameField.text!
-                    self.dateLabel.text = self.date.isEmpty ? "All" : self.date
-                    self.userLabel.text = self.user.isEmpty ? "All" : self.user
-                    
-                    self.refresh(sender)
-
-                    return
-                    
+            
+            if let dateField = alertController.textFields?[1] ,
+                let nameField = alertController.textFields?[0]{
+                
+                self.date = dateField.text!
+                self.user = nameField.text!
+                self.tabBarController?.navigationItem.prompt = self.user.isEmpty ? "Reports From All Users" : "Report from user \(self.user)"
+                if (!self.date.isEmpty){
+                    self.tabBarController?.navigationItem.prompt = "\(self.navigationItem.prompt!) from \(self.date)"
                 }
-                return
+                self.refreshTable(sender)
             }
 
         }
@@ -134,76 +108,53 @@ class MasterViewController: UIViewController,UITableViewDelegate {
 
         
     }
-    func refresh(sender: AnyObject){
+    func refreshTable(sender: AnyObject){
         
-        potholes = [PotHole]()
-        types = [String]()
-        urlId = 0
-
+        self.waitIndicator.startAnimating()
+        potholesDict = [:]
         
-        if let url = NSURL(string: "http://bismarck.sdsu.edu/city/categories") {
-            
-            let session = NSURLSession.sharedSession()
-            let task = session.dataTaskWithURL(url, completionHandler: getWebPage)
-            task.resume()
-            
-        }
+        fetchPotholeCategories()
     }
-    func getWebPage(data:NSData?, response:NSURLResponse?, error:NSError?) -> Void {
-        
-        var status : Int = 0
-        if let httpResponse = response as? NSHTTPURLResponse{
-            status = httpResponse.statusCode
-            let header = httpResponse.allHeaderFields
-            header["Content-Type"]
-            print ("status code :\(status)")
-        }
-        
-        guard error == nil else {
-            print("error: \(error!.localizedDescription): \(error!.userInfo)")
-            return
-        }
-        if data != nil && status == 200 {
-            if let webPageContents = NSString(data: data!, encoding: NSUTF8StringEncoding) {
-                print(webPageContents)
+    func fetchPotholeCategories(){
+        let getCategoriesRequest = Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/categories")
+        getCategoriesRequest.responseJSON {response in
+            
+            guard response.result.isSuccess else{
                 
-                do {
-                    let jsonData:AnyObject = try NSJSONSerialization.JSONObjectWithData(data!,options : NSJSONReadingOptions.AllowFragments)
-                    let jsonNSArray:NSArray = jsonData as! NSArray
-                    performSelectorOnMainThread("reloadTable:", withObject: jsonNSArray, waitUntilDone: true)
-                    
-                } catch {
-                    print("json serialization error")
-
-                }
-            } else {
-                print("unable to convert data to text")
-            }
-        }
-    }
-    func reloadTable(jsonNSArray:NSArray){
-        switch(urlId){
-            case 0 :
-                defineCategories(jsonNSArray)
-                urlId = 1
-                for type in types{
-                    
-                    if let url = NSURL(string: "http://bismarck.sdsu.edu/city/fromDate?type=\(type)&date=\(date)&user=\(user)") {
-                        let session = NSURLSession.sharedSession()
-                        let task = session.dataTaskWithURL(url, completionHandler: getWebPage)
-                        task.resume()
+                getCategoriesRequest.responseString{ response in
+        
+                    if let errorResponse = response.result.value{
+                        NSLog("Response error String: \(errorResponse)")
                     }
-               }
-            case 1:
-            
-                fetchPotHoles(jsonNSArray)
-        default:
+                }
+                return
                 
-                 break
+            }
+            let categoryArray:NSArray = response.result.value as! NSArray
+            self.defineCategories(categoryArray)
+            self.fetchPotholesFromeDate()
+
+        }
+    }
+    func fetchPotholesFromeDate(){
+        var count = 0
+        for type in types{
+            let getPotholesReport = Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/fromDate", parameters: ["type": type, "date" : date, "user" : user])
+            getPotholesReport.responseJSON {response in
+                if response.result.isSuccess {
+                    let potholesArray:NSArray = response.result.value as! NSArray
+                    self.definePotHoles(potholesArray,type: type)
+                    
+                }
+                count++
+                if count == self.types.count{
+                    self.tableView.reloadData()
+                    self.waitIndicator.stopAnimating()
+                }
+            }
+
         }
         
-        tableView.reloadData()
-
     }
     func defineCategories(jsonNSArray : NSArray) {
         
@@ -211,27 +162,29 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         types = NSArray(array:jsonNSArray.sort({($0 as! String) < ($1 as! String)}), copyItems: true) as! [String]
         
     }
-    func fetchPotHoles(let jsonNSArray : NSArray){
-        
+    func definePotHoles(jsonNSArray : NSArray, type :String){
+        var potholes = [PotHole]()
         for jsonDictionary in jsonNSArray.reverse(){
             
-            let potHoleType = jsonDictionary["type"] as! String
-            let potHole = PotHole(type: potHoleType ,
-                id: jsonDictionary["id"] as! Int,
-                latitude: jsonDictionary["latitude"] as! Float,
-                longitude: jsonDictionary["longitude"] as! Float,
-                imageType: jsonDictionary["imagetype"] as! String ,
-                description: jsonDictionary["description"] as! String,
-                date: jsonDictionary["created"] as! String,
-                user: "notKnown")
+            let potHole = PotHole(type: jsonDictionary["type"] as? String ,
+                id: jsonDictionary["id"] as? Int,
+                latitude: jsonDictionary["latitude"] as? Double,
+                longitude: jsonDictionary["longitude"] as? Double,
+                imageType: jsonDictionary["imagetype"] as? String ,
+                description: jsonDictionary["description"] as? String,
+                date: jsonDictionary["created"] as? String,
+                user: nil,
+                image : nil)
             potholes.insert(potHole, atIndex: 0)
-
+            
         }
-
+        self.potholesDict[type] = potholes
         
     }
+
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        self.tabBarController?.navigationItem.title = "PotHoles List"
         tableView.reloadData()
     }
 
@@ -248,7 +201,9 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
                 //let object = portholes[indexPath.row] as! NSDate
-                let currentPotHole = potholes.filter{$0.type == types[indexPath.section] }[indexPath.row]
+                
+                //let currentPotHole = potholes.filter{$0.type == types[indexPath.section] }[indexPath.row]
+                let currentPotHole = potholesDict[types[indexPath.section]]![indexPath.row]
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
                 //controller.detailItem = object
                 controller.potHoleDetailItem = currentPotHole
@@ -274,7 +229,12 @@ class MasterViewController: UIViewController,UITableViewDelegate {
 
      func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return potholes.filter{$0.type == types[section]}.count
+        if let potholeDict = potholesDict[types[section]]{
+            
+            return potholeDict.count
+        }else{
+            return 0
+        }
         
         
     }
@@ -282,32 +242,29 @@ class MasterViewController: UIViewController,UITableViewDelegate {
      func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+        //let object = potholes.filter{$0.type == types[indexPath.section]}[indexPath.row]
+        let object = potholesDict[types[indexPath.section]]![indexPath.row]
+        cell.textLabel!.text = object.date
+        cell.detailTextLabel?.text = object.description
+        if object.imageType == "none"{
+            cell.imageView?.image = UIImage(named: "NoImage-1")
             
-            let object = potholes.filter{$0.type == types[indexPath.section]}[indexPath.row]
-            cell.textLabel!.text = object.date
-            cell.detailTextLabel?.text = object.description
-            return cell
+        }else{
+            cell.imageView?.image = UIImage(named: "ImageIcon")
+        }
+
+        
+        return cell
     }
      func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
         return types[section]
     }
+    @IBAction func returnFromPost(segue:UIStoryboardSegue) {
 
-/*
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return false
+        self.refreshTable(self)
     }
-
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            potholes.removeAtIndex(indexPath.row)
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
-        }
-    }*/
-
+    
 
 }
 

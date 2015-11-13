@@ -9,13 +9,22 @@
 import Foundation
 
 struct PotHole {
-    let type : String
-    let id : Int
-    let latitude : Float
-    let longitude : Float
-    let imageType : String
-    let description : String
-    let date : String
-    let user : String
     
+    var type : String?
+    var id : Int?
+    var latitude : Double?
+    var longitude : Double?
+    var imageType : String?
+    var description : String?
+    var date : String?
+    var user : String?
+    var image : String?
+    
+    /*init(type : String , latitude : Double , longitude : Double , imageType : String , description : String){
+        self.type = type
+        self.latitude = latitude
+        self.longitude = longitude
+        self.imageType = imageType
+        self.description = description
+    }*/
 }
