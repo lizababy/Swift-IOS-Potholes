@@ -112,56 +112,50 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         
         self.waitIndicator.startAnimating()
         potholesDict = [:]
-        
-        fetchPotholeCategories()
+        fetchPotholes()
     }
-    func fetchPotholeCategories(){
-        let getCategoriesRequest = Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/categories")
-        getCategoriesRequest.responseJSON {response in
+    func fetchPotholes(){
+        
+        let url = "http://bismarck.sdsu.edu/city/categories"
+        
+        Alamofire.request(.GET, url).responseJSON {response in
+            if response.result.isSuccess{
+                let categoryArray:NSArray = response.result.value as! NSArray
+                self.types = (categoryArray as! [String]).sort(){$0 < $1}
+                for type in self.types{
+                    self.fetchPotholesFromeDate(type)
+                }
+            }
+        }
+    }
+    func fetchPotholesFromeDate(type : String){
+        
+        let url = "http://bismarck.sdsu.edu/city/fromDate"
+        let parameters = ["type": type, "date" : date, "user" : user]
+        
+        Alamofire.request(.GET, url, parameters: parameters)
+            .responseJSON {response in
             
-            guard response.result.isSuccess else{
-                
-                getCategoriesRequest.responseString{ response in
-        
-                    if let errorResponse = response.result.value{
-                        NSLog("Response error String: \(errorResponse)")
-                    }
-                }
-                return
-                
+            if response.result.isSuccess {
+                let jsonArray:NSArray = response.result.value as! NSArray
+                let jsonDict : [String : NSArray] = ["type" : jsonArray]
+                self.performSelectorOnMainThread("updateOnMainThread:", withObject: jsonDict, waitUntilDone: false)
             }
-            let categoryArray:NSArray = response.result.value as! NSArray
-            self.defineCategories(categoryArray)
-            self.fetchPotholesFromeDate()
-
         }
     }
-    func fetchPotholesFromeDate(){
-        var count = 0
-        for type in types{
-            let getPotholesReport = Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/fromDate", parameters: ["type": type, "date" : date, "user" : user])
-            getPotholesReport.responseJSON {response in
-                if response.result.isSuccess {
-                    let potholesArray:NSArray = response.result.value as! NSArray
-                    self.definePotHoles(potholesArray,type: type)
-                    
-                }
-                count++
-                if count == self.types.count{
-                    self.tableView.reloadData()
-                    self.waitIndicator.stopAnimating()
-                }
-            }
-
+    func updateOnMainThread(potholeNSDict : [String : NSArray]){
+        
+        let type = potholeNSDict.keys.first!
+        self.definePotHoles(potholeNSDict["type"]!, type: type )
+        tableView.reloadData()
+        
+        if type == types[types.count-1]{
+            
+            waitIndicator.stopAnimating()
         }
-        
+
     }
-    func defineCategories(jsonNSArray : NSArray) {
-        
-        
-        types = NSArray(array:jsonNSArray.sort({($0 as! String) < ($1 as! String)}), copyItems: true) as! [String]
-        
-    }
+    
     func definePotHoles(jsonNSArray : NSArray, type :String){
         var potholes = [PotHole]()
         for jsonDictionary in jsonNSArray.reverse(){
@@ -200,12 +194,10 @@ class MasterViewController: UIViewController,UITableViewDelegate {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
-                //let object = portholes[indexPath.row] as! NSDate
                 
-                //let currentPotHole = potholes.filter{$0.type == types[indexPath.section] }[indexPath.row]
                 let currentPotHole = potholesDict[types[indexPath.section]]![indexPath.row]
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                //controller.detailItem = object
+
                 controller.potHoleDetailItem = currentPotHole
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
@@ -224,7 +216,7 @@ class MasterViewController: UIViewController,UITableViewDelegate {
     // MARK: - Table View
 
      func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return types.count
+        return potholesDict.keys.count
     }
 
      func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -239,20 +231,18 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         
     }
 
-     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-        //let object = potholes.filter{$0.type == types[indexPath.section]}[indexPath.row]
-        let object = potholesDict[types[indexPath.section]]![indexPath.row]
-        cell.textLabel!.text = object.date
-        cell.detailTextLabel?.text = object.description
-        if object.imageType == "none"{
+        let pothole = potholesDict[types[indexPath.section]]![indexPath.row]
+        cell.textLabel!.text = pothole.date
+        cell.detailTextLabel?.text = pothole.description
+        if pothole.imageType == "none"{
             cell.imageView?.image = UIImage(named: "NoImage-1")
             
         }else{
             cell.imageView?.image = UIImage(named: "ImageIcon")
         }
-
         
         return cell
     }

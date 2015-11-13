@@ -97,9 +97,13 @@ class DetailViewController: UIViewController {
             .responseData { response in
                 
                 if let imageData = response.result.value {
+                    
                     if let image = UIImage.init(data: imageData ){
-                        self.setImage(image)
+                        
+                        self.performSelectorOnMainThread("setImage:", withObject: image, waitUntilDone: false)
                     }
+                    
+                
                 }
         }
         
