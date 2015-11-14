@@ -16,7 +16,8 @@ class MasterViewController: UIViewController,UITableViewDelegate {
     var types = [String]()
     var date :String = ""
     var user : String = ""
-
+    var count : Int = 0
+    
     @IBOutlet weak var waitIndicator: UIActivityIndicatorView!
     
     @IBOutlet weak var tableView: UITableView!
@@ -66,15 +67,15 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         
         // Add the text field for text entry.
         alertController.addTextFieldWithConfigurationHandler { textField -> Void in
-            // If you need to customize the text field, you can do so here.
-             textField.placeholder = "Enter UserName"
-             textField.text = self.user
+            
+            textField.placeholder = "Enter UserName"
+            textField.text = self.user
             textField.keyboardType = .NumbersAndPunctuation
             
         }
         
         alertController.addTextFieldWithConfigurationHandler { textField -> Void in
-            // If you need to customize the text field, you can do so here.
+
             textField.placeholder = "Enter from Date (mm/dd/yy)"
             textField.text = self.date
             textField.keyboardType = .NumbersAndPunctuation
@@ -135,25 +136,21 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         
         Alamofire.request(.GET, url, parameters: parameters)
             .responseJSON {response in
-            
             if response.result.isSuccess {
                 let jsonArray:NSArray = response.result.value as! NSArray
-                let jsonDict : [String : NSArray] = ["type" : jsonArray]
-                self.performSelectorOnMainThread("updateOnMainThread:", withObject: jsonDict, waitUntilDone: false)
+                self.definePotHoles(jsonArray, type: type)
+                self.performSelectorOnMainThread("updateOnMainThread:", withObject: type, waitUntilDone: false)
             }
         }
     }
-    func updateOnMainThread(potholeNSDict : [String : NSArray]){
+    func updateOnMainThread(type : String){
         
-        let type = potholeNSDict.keys.first!
-        self.definePotHoles(potholeNSDict["type"]!, type: type )
+        count++
         tableView.reloadData()
-        
-        if type == types[types.count-1]{
-            
+        if count == types.count{
+            count = 0
             waitIndicator.stopAnimating()
         }
-
     }
     
     func definePotHoles(jsonNSArray : NSArray, type :String){
@@ -206,7 +203,6 @@ class MasterViewController: UIViewController,UITableViewDelegate {
         if segue.identifier == "postDetail"{
            
            let controller = (segue.destinationViewController as! UINavigationController).topViewController as! PostDetailsViewController
-            controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
             controller.navigationItem.leftItemsSupplementBackButton = true
 
         }
@@ -216,19 +212,17 @@ class MasterViewController: UIViewController,UITableViewDelegate {
     // MARK: - Table View
 
      func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return potholesDict.keys.count
+
+        return types.count
     }
 
      func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        if let potholeDict = potholesDict[types[section]]{
+        guard let potholeDict = potholesDict[types[section]] else{
             
-            return potholeDict.count
-        }else{
             return 0
         }
-        
-        
+        return potholeDict.count
     }
 
      func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
@@ -253,6 +247,11 @@ class MasterViewController: UIViewController,UITableViewDelegate {
     @IBAction func returnFromPost(segue:UIStoryboardSegue) {
 
         self.refreshTable(self)
+    }
+    
+    @IBAction func returnFromCancel(segue:UIStoryboardSegue) {
+        //No operation to do as user cancelled previous view
+       
     }
     
 

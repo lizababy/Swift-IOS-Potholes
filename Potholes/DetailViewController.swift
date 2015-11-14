@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import Alamofire
 
-class DetailViewController: UIViewController {
+class DetailViewController: UITableViewController {
     
     @IBOutlet weak var typeLabel: UILabel!
     
@@ -29,7 +29,7 @@ class DetailViewController: UIViewController {
     
     @IBOutlet weak var imageWaitIndicator: UIActivityIndicatorView!
     
-    var potHoleDetailItem: PotHole? {
+    var potHoleDetailItem: PotHole? = nil {
         
         didSet {
             // Update the view.
@@ -52,8 +52,10 @@ class DetailViewController: UIViewController {
             if let descTextView = self.descTextView {
                 descTextView.text = potHoleDetails.description
             }
+            
             let latitude = String(format: "%g\u{00B0}", potHoleDetails.latitude!)
             let longitude = String(format: "%g\u{00B0}", potHoleDetails.longitude!)
+            
             if let label = self.latitudeLabel {
                 label.text = latitude
             }
@@ -65,10 +67,11 @@ class DetailViewController: UIViewController {
                 if potHoleDetails.imageType == "none"{
 
                     potHoleImage.image = UIImage(named: "NoImage")
-                    imageWaitIndicator.stopAnimating()
+                    
 
                 }else{
                    // fetch image
+                    imageWaitIndicator.startAnimating()
                     requestImage(potHoleDetails.id!)
                     
                 }
@@ -96,14 +99,10 @@ class DetailViewController: UIViewController {
         Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/image", parameters: ["id": imageID])
             .responseData { response in
                 
-                if let imageData = response.result.value {
-                    
-                    if let image = UIImage.init(data: imageData ){
+                if let imageData = response.result.value , let image = UIImage.init(data: imageData ){
                         
-                        self.performSelectorOnMainThread("setImage:", withObject: image, waitUntilDone: false)
-                    }
+                    self.performSelectorOnMainThread("setImage:", withObject: image, waitUntilDone: false)
                     
-                
                 }
         }
         
@@ -128,7 +127,5 @@ class DetailViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
 }
 

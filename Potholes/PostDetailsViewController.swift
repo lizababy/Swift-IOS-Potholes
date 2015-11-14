@@ -50,9 +50,7 @@ class PostDetailsViewController: UIViewController,UITextViewDelegate, UIImagePic
             let cameraAction = UIAlertAction(title: cameraButtonTitle, style: .Default) { _ in
                 self.pickMediaFromSource(UIImagePickerControllerSourceType.Camera)
             }
-            
             alertController.addAction(cameraAction)
-            
         }
         
         
@@ -75,7 +73,7 @@ class PostDetailsViewController: UIViewController,UITextViewDelegate, UIImagePic
         pothole.description = descriptionTextView.text
         let urlpost = "http://bismarck.sdsu.edu/city/report"
         var parameters :[String : AnyObject] = ["type":(pothole.type)!, "latitude":(pothole.latitude)! , "longitude" : (pothole.longitude)!, "user" : (pothole.user)!, "imagetype" : (pothole.imageType)!, "description":(pothole.description)!]
-        if pothole.imageType! != "none"{
+        if pothole.imageType! != "none" {
             parameters["image"] = pothole.image!
         }
        
@@ -84,27 +82,30 @@ class PostDetailsViewController: UIViewController,UITextViewDelegate, UIImagePic
             guard response.result.isSuccess else {
                 postRequest.responseString { response in
                     if let errorString = response.result.value {
-                        
-                        self.waitIndicator.stopAnimating()
-                        self.showAlert("Failure!", message: errorString)
+                        let responseArg = ["Failure!", errorString]
+                        self.performSelectorOnMainThread("postCompleted:", withObject: responseArg, waitUntilDone: false)
                     }
                 }
                 return
             }
-            
             let data = response.result.value
-            self.waitIndicator.stopAnimating()
             self.pothole.id = data!["id"] as? Int
-            self.showAlert("Success!", message: "The report is successfully posted!")
+            let responseArg = ["Success!", "The report is successfully posted!"]
+            self.performSelectorOnMainThread("postCompleted:", withObject: responseArg, waitUntilDone: false)
         }
-        
+    }
+    
+    func postCompleted(response : [String]){
+        self.waitIndicator.stopAnimating()
+        self.showAlert(response[0], message: response[1])
     }
     func showAlert(title : String, message : String){
-        let alertController = UIAlertController(title: title, message: "The report is successfully posted!", preferredStyle:.Alert)
-        let okAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle:.Alert)
+        let okAction = UIAlertAction(title: "OK", style: .Default){ _ in
+            self.dismissViewControllerAnimated(true, completion: nil)
+        }
         alertController.addAction(okAction)
         self.presentViewController(alertController, animated: true, completion: nil)
-        
     }
 
     @IBAction func editUserIdAlert(sender : AnyObject?){
@@ -289,10 +290,9 @@ class PostDetailsViewController: UIViewController,UITextViewDelegate, UIImagePic
         }
         return true
     }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-
-}
+   }

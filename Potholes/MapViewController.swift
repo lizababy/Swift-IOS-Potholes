@@ -25,12 +25,11 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         // Do any additional setup after loading the view.
         potholeMap.delegate = self
         
-        let getPotholesReport = Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/fromLocation", parameters: ["type": "street", "date" : "", "user" : "", "start-latitude" :32.7,"end-latitude" :32.8,"start-longitude" :-118,"end-longitude" :-117 ])
-        
-        getPotholesReport.responseJSON {response in
+        Alamofire.request(.GET, "http://bismarck.sdsu.edu/city/fromLocation", parameters: ["type": "street", "date" : "", "user" : "", "start-latitude" :32.7,"end-latitude" :32.8,"start-longitude" :-118,"end-longitude" :-117 ])
+            .responseJSON {response in
             if response.result.isSuccess {
                 let potholesArray:NSArray = response.result.value as! NSArray
-                self.definePotHoles(potholesArray)
+                self.performSelectorOnMainThread("definePotHoles:", withObject: potholesArray, waitUntilDone: false)
             }
         }
 
